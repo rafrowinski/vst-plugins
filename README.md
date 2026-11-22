@@ -1,5 +1,8 @@
 # VST plugins
 
+> **[⬇ Download the plugins here](https://github.com/rafrowinski/vst-plugins/releases)** - ready-to-use Windows files.
+> On that page, open the plugin you want and click the `.zip` file under **Assets**.
+
 Audio plugins for guitar (Windows 64-bit), built with [DPF](https://github.com/DISTRHO/DPF) and [Dear ImGui](https://github.com/ocornut/imgui).
 
 | Plugin | What it does | Formats |

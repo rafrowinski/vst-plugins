@@ -1,5 +1,8 @@
 # Cleaver Slicer
 
+> **[⬇ Download the plugins here](https://github.com/rafrowinski/vst-plugins/releases)** - ready-to-use Windows files.
+> On that page, open the plugin you want and click the `.zip` file under **Assets**.
+
 A VST3 plugin (Windows 64-bit) of the pattern slicer / stutter kind for guitar, inspired by the idea of the Boss Slicer:
 a step sequencer of up to 32 steps chops the sound into rhythmic patterns, with pitch shift, filter and pan per step.
 

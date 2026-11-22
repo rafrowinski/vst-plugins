@@ -1,5 +1,8 @@
 # Guitar to MIDI Live
 
+> **[⬇ Download the plugins here](https://github.com/rafrowinski/vst-plugins/releases)** - ready-to-use Windows files.
+> On that page, open the plugin you want and click the `.zip` file under **Assets**.
+
 Guitar to MIDI. The plugin listens to single notes played on the guitar and sends them out as MIDI: notes with velocity,
 bends and vibrato as pitch bend, and the playing level as a controller (CC). Put any synthesizer,
 sampler or drum machine after it.

@@ -1,5 +1,8 @@
 # Swarm Synth
 
+> **[⬇ Download the plugins here](https://github.com/rafrowinski/vst-plugins/releases)** - ready-to-use Windows files.
+> On that page, open the plugin you want and click the `.zip` file under **Assets**.
+
 A VST3 guitar synthesizer built on the Swarm Chorus framework: up to 8 voices (oscillators) that play what the guitar plays -
 each with its own wave, octave, interval, detune and stereo position. Monophonic: play single notes.
 

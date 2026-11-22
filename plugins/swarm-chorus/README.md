@@ -1,5 +1,8 @@
 # Swarm Chorus
 
+> **[⬇ Download the plugins here](https://github.com/rafrowinski/vst-plugins/releases)** - ready-to-use Windows files.
+> On that page, open the plugin you want and click the `.zip` file under **Assets**.
+
 Multi-voice VST3 chorus (6 voices, stereo) with detune, feedback, a hue/wah filter per voice, EQ,
 start on pick attack, envelope control, tempo sync, a hand-drawn custom wave
 and a graph of each voice's delay time (the curves can be dragged with the mouse).

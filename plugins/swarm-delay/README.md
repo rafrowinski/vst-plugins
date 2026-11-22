@@ -1,5 +1,8 @@
 # Swarm Delay
 
+> **[⬇ Download the plugins here](https://github.com/rafrowinski/vst-plugins/releases)** - ready-to-use Windows files.
+> On that page, open the plugin you want and click the `.zip` file under **Assets**.
+
 Multi-voice VST3 delay (6 voices, stereo), built on the Swarm Chorus framework.
 
 - every voice is a separate delay line with its own feedback: Time (ms or a note value), Feedback,
