@@ -1,0 +1,21 @@
+# build output
+/build*/
+/bin/
+
+# cmake temp files
+CMakeFiles/
+cmake_install.cmake
+CMakeCache.txt
+
+# editor and OS files
+.idea/
+.vscode/
+Thumbs.db
+.DS_Store
+
+# packages, scratch, local test recordings
+*.zip
+*.tgz
+/_to_delete/
+single note test-*.wav
+cleaver_p*.wav

@@ -1,0 +1,38 @@
+name: build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  windows:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install toolchain
+        run: sudo apt-get update -qq && sudo apt-get install -yqq mingw-w64 cmake
+      - name: Build all plugins (Windows x64)
+        run: |
+          cmake -B build-win -DCMAKE_TOOLCHAIN_FILE=mingw.cmake -DCMAKE_BUILD_TYPE=Release
+          cmake --build build-win -j4 --target swarm-chorus-vst3 swarm-delay-vst3 swarm-synth-vst3 cleaver-slicer-vst3 guitar-to-midi-live-vst3 guitar-to-midi-live-vst2 guitar-to-midi-live-clap
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vst-plugins-win64
+          path: |
+            build-win/bin/*.vst3
+            build-win/bin/*.dll
+            build-win/bin/*.clap
+
+  tests:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Offline tests
+        run: |
+          set -e
+          ( cd shared/guitar-engine && g++ -O2 -std=c++17 tests/detector_presets_test.cpp -o /tmp/t1 && /tmp/t1 )
+          ( cd plugins/swarm-synth && for t in engine_test wave_preset_test scatter_test; do g++ -O2 -std=c++17 tests/$t.cpp -o /tmp/$t && /tmp/$t; done )
+          ( cd plugins/guitar-to-midi-live && g++ -O2 -std=c++17 tests/midi_test.cpp -o /tmp/midi_test && /tmp/midi_test )
+          ( cd plugins/swarm-chorus && for t in engine_test wave_preset_test; do g++ -O2 -std=c++17 tests/$t.cpp -o /tmp/c_$t && /tmp/c_$t; done )
+          ( cd plugins/swarm-delay && g++ -O2 -std=c++17 -Isrc test/engine-test.cpp -o /tmp/d && /tmp/d )
+          ( cd plugins/cleaver-slicer && g++ -O2 -std=c++17 -Isrc test/dsp_test.cpp -o /tmp/s && /tmp/s )
