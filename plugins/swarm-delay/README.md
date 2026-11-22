@@ -1,58 +1,60 @@
 # Swarm Delay
 
-Wielogłosowy delay VST3 (6 głosów, stereo), zbudowany na szkielecie Swarm Chorus.
+Multi-voice VST3 delay (6 voices, stereo), built on the Swarm Chorus framework.
 
-- każdy głos to osobna linia opóźniająca z własnym feedbackiem: Time (ms albo wartość nutowa), Feedback,
-  Reverse, Pitch (półtony w pętli), Detune, Level, Pan, Crush
-- **Time x** z trybami **Tape** (wysokość wygina się jak taśma) i **Jump** (przeskok i zacięcie)
-- **Freeze** - zamraża i zapętla zawartość linii; działa na niej Time x, Reverse, Pitch, chorus i crusher
-- chorus na powtórzeniach (Detune / Rate / Mix), crusher (Bits / Rate, w pętli albo za nią)
-- filtr w pętli (Lo cut / Hi cut), Warmth, ping-pong, tempo sync
-- ducking (powtórzenia cichną, gdy grasz)
-- losowe glitche: reverse, skok na pół czasu, stutter
-- Spread (Time / Detune / Pan), presety z eksportem i importem CSV, Random, A/B
-- **Time sweep**: co cykl (ms albo wartość nutowa) czas wszystkich głosów skacze i wraca - Up (czas rośnie) albo Down (czas maleje); z "One way" czas jedzie tylko w jedną stronę
-- czas każdego głosu w ms albo jako wartość nutowa (1/8. itd.), osobno dla każdego głosu
-- wykres wszystkich powtórzeń (góra = lewy kanał, dół = prawy); pierwsze powtórzenie głosu można przeciągać
+- every voice is a separate delay line with its own feedback: Time (ms or a note value), Feedback,
+  Reverse, Pitch (semitones in the loop), Detune, Level, Pan, Crush
+- **Time x** with **Tape** (pitch bends like tape) and **Jump** (jump and stutter) modes
+- **Freeze** - freezes and loops the contents of the lines; Time x, Reverse, Pitch, chorus and crusher act on it
+- chorus on the repeats (Detune / Rate / Mix), crusher (Bits / Rate, in the loop or after it)
+- filter in the loop (Lo cut / Hi cut), Warmth, ping-pong, tempo sync
+- ducking (the repeats get quieter while you play)
+- random glitches: reverse, jump to half time, stutter
+- Spread (Time / Detune / Pan), presets with CSV export and import, Random, A/B
+- **Time sweep**: every cycle (ms or a note value) the time of all voices jumps and comes back - Up (time grows) or Down (time shrinks); with "One way" the time only moves in one direction
+- each voice's time in ms or as a note value (1/8. etc.), set per voice
+- a graph of all repeats (top = left channel, bottom = right); the first repeat of a voice can be dragged
 
-## Instalacja (Windows)
+## Installation (Windows)
 
-Skopiuj `Swarm Delay.vst3` do `C:\Program Files\Common Files\VST3\` i w REAPERZE zrób
+Copy `Swarm Delay.vst3` to `C:\Program Files\Common Files\VST3\` and in REAPER run
 Options > Preferences > Plug-ins > VST > Clear cache/re-scan.
 
-Presety użytkownika zapisują się w `%APPDATA%\Swarm Delay\user-presets.csv`.
+User presets are saved in `%APPDATA%\Swarm Delay\user-presets.csv`.
 
-## Format CSV presetów
+## Preset CSV format
 
-Jeden wiersz = jeden preset. Pierwsza kolumna to nazwa, kolejne to parametry (nagłówek zawiera
-ich symbole, np. `mix`, `time_mul`, `v1_time`, `v3_pitch`). Separator `;`, kropka dziesiętna.
-Import przyjmuje też `,` lub tabulator jako separator, przecinek dziesiętny (np. po zapisie z Excela),
-dowolną kolejność kolumn i brakujące kolumny (dostają wartości domyślne).
+One row = one preset. The first column is the name, the next ones are parameters (the header holds
+their symbols, e.g. `mix`, `time_mul`, `v1_time`, `v3_pitch`). Separator `;`, decimal point.
+Import also accepts `,` or tab as the separator, a decimal comma (e.g. after saving from Excel),
+any column order and missing columns (they get default values).
 
-Duplikaty przy imporcie: ta sama nazwa i te same ustawienia -> pominięty;
-ta sama nazwa, inne ustawienia -> dodany jako `Nazwa (2)`, `Nazwa (3)`...
+Duplicates on import: same name and same settings -> skipped;
+same name, different settings -> added as `Name (2)`, `Name (3)`...
 
-Freeze nie jest częścią presetu: presety, Random i A/B go nie ruszają.
+Freeze is not part of a preset: presets, Random and A/B leave it alone.
 
-## Kod
+## Code
 
-- `src/Params.hpp`   - lista parametrów, wartości efektywne głosów, presety fabryczne
-- `src/Engine.hpp`   - DSP (bez zależności od frameworka)
-- `src/PresetIO.hpp` - biblioteka presetów i CSV
-- `src/PluginDSP.cpp`, `src/PluginUI.cpp` - wtyczka i interfejs (DPF + Dear ImGui)
-- `test/engine-test.cpp` - testy silnika offline: `g++ -std=c++17 -O2 -Isrc test/engine-test.cpp -o t && ./t`
+- `src/Params.hpp`   - parameter list, effective voice values, factory presets
+- `src/Engine.hpp`   - DSP (no framework dependencies)
+- `src/PresetIO.hpp` - preset library and CSV
+- `src/PluginDSP.cpp`, `src/PluginUI.cpp` - plugin and user interface (DPF + Dear ImGui)
+- `test/engine-test.cpp` - offline engine tests: `g++ -std=c++17 -O2 -Isrc test/engine-test.cpp -o t && ./t`
 
+## Building
 
-## Budowanie
+All plugins are built together from the whole repository - see the [main README](../../README.md#building).
+This plugin only (Linux -> Windows, this is how the included file was made), from the repository root:
 
-Wtyczki buduje się razem z całego repozytorium - instrukcja w [głównym README](../../README.md#budowanie).
-Tylko ta wtyczka (Linux -> Windows, tak powstał dołączony plik):
+    cmake -B build-win -DCMAKE_TOOLCHAIN_FILE=mingw.cmake -DCMAKE_BUILD_TYPE=Release
+    cmake --build build-win --target swarm-delay-vst3
 
-    cmake -S ../.. -B ../../build-win -DCMAKE_TOOLCHAIN_FILE=mingw.cmake -DCMAKE_BUILD_TYPE=Release
-    cmake --build ../../build-win --target swarm-delay-vst3
+## License
 
-## Licencja
+The plugin code is MIT licensed - see [LICENSE](../../LICENSE). Third-party code (DPF, DPF-Widgets, Dear ImGui,
+DejaVu Sans font) lives in `shared/` under its own licenses - details in the [main README](../../README.md#license).
 
-Kod wtyczki jest na licencji MIT - patrz [LICENSE](../../LICENSE). Cudzy kod (DPF, DPF-Widgets, Dear ImGui,
-font DejaVu Sans) leży w `shared/` na własnych licencjach - szczegóły w [głównym README](../../README.md#licencja).
+## Trademarks
 
+VST is a trademark of Steinberg Media Technologies GmbH.

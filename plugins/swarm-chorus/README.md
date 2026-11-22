@@ -1,78 +1,76 @@
 # Swarm Chorus
 
-Wielogłosowy chorus VST3 (6 głosów, stereo) z detune, feedbackiem, filtrem hue/wah na głos, EQ,
-startem od uderzenia w struny, sterowaniem obwiednią, synchronizacją z tempem, własną rysowaną falą
-i wykresem czasu opóźnienia każdego głosu (krzywe można przeciągać myszą).
+Multi-voice VST3 chorus (6 voices, stereo) with detune, feedback, a hue/wah filter per voice, EQ,
+start on pick attack, envelope control, tempo sync, a hand-drawn custom wave
+and a graph of each voice's delay time (the curves can be dragged with the mouse).
 
-Wersja 1.1: Warmth, Envelope, Tempo sync, stereo na wejściu, edycja na wykresie, własna fala, Random, A/B.
+Version 1.1: Warmth, Envelope, Tempo sync, stereo input, editing on the graph, custom wave, Random, A/B.
 
-## Instalacja (Windows)
+## Installation (Windows)
 
-Skopiuj `Swarm Chorus.vst3` do `C:\Program Files\Common Files\VST3\` i w REAPERZE zrób
+Copy `Swarm Chorus.vst3` to `C:\Program Files\Common Files\VST3\` and in REAPER run
 Options > Preferences > Plug-ins > VST > Re-scan.
 
-Presety użytkownika zapisują się w `%APPDATA%\Swarm Chorus\user-presets.csv`.
+User presets are saved in `%APPDATA%\Swarm Chorus\user-presets.csv`.
 
-## Własna fala (Shape = Custom wave)
+## Custom wave (Shape = Custom wave)
 
-Edytor otwiera przycisk „Edit wave...". Fala to albo punkty (przeciąganie, podwójne kliknięcie dodaje,
-prawy przycisk usuwa; gładka krzywa albo odcinki), albo wzór w zmiennej `x` (0..1 na jeden cykl).
-W obu przypadkach wtyczka raz przelicza falę na tablicę 256 wartości i w trakcie grania tylko z niej czyta.
+The "Edit wave..." button opens the editor. A wave is either points (drag to move, double-click to add,
+right-click to remove; smooth curve or straight segments) or a formula in the variable `x` (0..1 over one cycle).
+Either way the plugin converts the wave once into a 256-value table and only reads from it while playing.
 
-Zapis tekstowy fali (kolumna `wave` w CSV, stan `wave` w projekcie):
+Text form of a wave (the `wave` column in CSV, the `wave` state in a project):
 
-- `n:x,y;x,y;...` - punkty połączone gładką krzywą
-- `l:x,y;x,y;...` - punkty połączone odcinkami
-- `f:wzór` - np. `f:sin(2*pi*x)^3`; wynik jest skalowany tak, żeby wypełnić cały zakres Min..Max
+- `n:x,y;x,y;...` - points joined by a smooth curve
+- `l:x,y;x,y;...` - points joined by straight segments
+- `f:formula` - e.g. `f:sin(2*pi*x)^3`; the result is scaled to fill the whole Min..Max range
 
-We wzorze: `+ - * / ^`, nawiasy, `pi`, `e`, funkcje `sin cos tan asin acos atan sinh cosh tanh abs sqrt exp ln log10
-floor ceil round frac sign min max pow mod clamp mix step`, oraz gotowe przebiegi o okresie 1: `tri saw sqr`.
+In a formula: `+ - * / ^`, parentheses, `pi`, `e`, the functions `sin cos tan asin acos atan sinh cosh tanh abs sqrt exp ln log10
+floor ceil round frac sign min max pow mod clamp mix step`, and ready-made waveforms with period 1: `tri saw sqr`.
 
-## Format CSV presetów
+## Preset CSV format
 
-Jeden wiersz = jeden preset. Pierwsza kolumna to nazwa, kolejne to parametry (nagłówek zawiera
-ich symbole, np. `mix`, `sp_phase`, `v1_rate`, `v3_detune`), ostatnia to `wave`. Separator `;`, kropka dziesiętna.
-Import przyjmuje też `,` lub tabulator jako separator, przecinek dziesiętny (np. po zapisie z Excela),
-dowolną kolejność kolumn i brakujące kolumny (dostają wartości domyślne). Pliki z wersji 1.1/1.2
-(kolumny `cw1`..`cw16`) są zamieniane na 16 punktów.
+One row = one preset. The first column is the name, the next ones are parameters (the header holds
+their symbols, e.g. `mix`, `sp_phase`, `v1_rate`, `v3_detune`), the last one is `wave`. Separator `;`, decimal point.
+Import also accepts `,` or tab as the separator, a decimal comma (e.g. after saving from Excel),
+any column order and missing columns (they get default values). Files from versions 1.1/1.2
+(columns `cw1`..`cw16`) are converted to 16 points.
 
-Duplikaty przy imporcie: ta sama nazwa i te same ustawienia -> pominięty;
-ta sama nazwa, inne ustawienia -> dodany jako `Nazwa (2)`, `Nazwa (3)`...
+Duplicates on import: same name and same settings -> skipped;
+same name, different settings -> added as `Name (2)`, `Name (3)`...
 
-## Kod
+## Code
 
-- `src/Params.hpp`   - lista parametrów, kształty LFO, presety fabryczne
-- `src/Wave.hpp`     - własna fala: punkty, parser wzorów, kompilacja do tablicy
-- `src/Engine.hpp`   - DSP (bez zależności od frameworka)
-- `src/PresetIO.hpp` - biblioteka presetów i CSV
-- `src/PluginDSP.cpp`, `src/PluginUI.cpp` - wtyczka i interfejs (DPF + Dear ImGui)
+- `src/Params.hpp`   - parameter list, LFO shapes, factory presets
+- `src/Wave.hpp`     - custom wave: points, formula parser, compiling to a table
+- `src/Engine.hpp`   - DSP (no framework dependencies)
+- `src/PresetIO.hpp` - preset library and CSV
+- `src/PluginDSP.cpp`, `src/PluginUI.cpp` - plugin and user interface (DPF + Dear ImGui)
+- `tests/`           - engine and wave tests that run without a host (see below)
 
-- `tests/`           - testy silnika i fali uruchamiane bez hosta (patrz niżej)
-
-
-## Testy
+## Tests
 
     g++ -O2 -std=c++17 tests/engine_test.cpp -o engine_test && ./engine_test
     g++ -O2 -std=c++17 tests/wave_preset_test.cpp -o wave_preset_test && ./wave_preset_test
 
-Pierwszy przepuszcza sygnał testowy przez wszystkie presety (szuka NaN, mierzy poziom i obciążenie)
-i sprawdza detune, stereo, Warmth, sync i własną falę. Drugi sprawdza parser wzorów, punkty i CSV.
+The first runs a test signal through every preset (looks for NaN, measures level and CPU load)
+and checks detune, stereo, Warmth, sync and the custom wave. The second checks the formula parser, points and CSV.
 
-## Budowanie
+## Building
 
-Wtyczki buduje się razem z całego repozytorium - instrukcja w [głównym README](../../README.md#budowanie).
-Tylko ta wtyczka (Linux -> Windows, tak powstał dołączony plik):
+All plugins are built together from the whole repository - see the [main README](../../README.md#building).
+This plugin only (Linux -> Windows, this is how the included file was made), from the repository root:
 
-    cmake -S ../.. -B ../../build-win -DCMAKE_TOOLCHAIN_FILE=mingw.cmake -DCMAKE_BUILD_TYPE=Release
-    cmake --build ../../build-win --target swarm-chorus-vst3
+    cmake -B build-win -DCMAKE_TOOLCHAIN_FILE=mingw.cmake -DCMAKE_BUILD_TYPE=Release
+    cmake --build build-win --target swarm-chorus-vst3
 
-## Licencja
+## License
 
-Kod wtyczki jest na licencji MIT - patrz [LICENSE](../../LICENSE). Cudzy kod (DPF, DPF-Widgets, Dear ImGui,
-font DejaVu Sans) leży w `shared/` na własnych licencjach - szczegóły w [głównym README](../../README.md#licencja).
+The plugin code is MIT licensed - see [LICENSE](../../LICENSE). Third-party code (DPF, DPF-Widgets, Dear ImGui,
+DejaVu Sans font) lives in `shared/` under its own licenses - details in the [main README](../../README.md#license).
 
-## Znaki towarowe
+## Trademarks
 
-VST jest znakiem towarowym Steinberg Media Technologies GmbH. Nazwy urządzeń w presetach
-(np. „CE-2 style", „Rockman Chorus style") opisują jedynie charakter brzmienia. Wtyczka nie jest
-powiązana z producentami tych urządzeń ani przez nich zatwierdzona.
+VST is a trademark of Steinberg Media Technologies GmbH. Device names in presets
+(e.g. "CE-2 style", "Rockman Chorus style") only describe the character of the sound. The plugin is not
+affiliated with or endorsed by the makers of those devices.

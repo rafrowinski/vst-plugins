@@ -1,66 +1,65 @@
 # VST plugins
 
-Wtyczki audio do gitary (Windows 64-bit), zbudowane na [DPF](https://github.com/DISTRHO/DPF) i [Dear ImGui](https://github.com/ocornut/imgui).
-Gotowe pliki są w katalogu `release/` każdej wtyczki - wystarczy je skopiować do `C:\Program Files\Common Files\VST3`
-(VST2 / CLAP: patrz README wtyczki).
+Audio plugins for guitar (Windows 64-bit), built with [DPF](https://github.com/DISTRHO/DPF) and [Dear ImGui](https://github.com/ocornut/imgui).
 
-| Wtyczka | Co robi | Formaty |
+| Plugin | What it does | Formats |
 |---|---|---|
-| [Swarm Chorus](plugins/swarm-chorus) | wielogłosowy chorus (6 głosów, stereo), własna rysowana fala | VST3 |
-| [Swarm Delay](plugins/swarm-delay) | wielogłosowy delay (6 głosów, stereo) | VST3 |
-| [Swarm Synth](plugins/swarm-synth) | syntezator gitarowy: do 8 oscylatorów grających to, co gitara | VST3 |
-| [Guitar to MIDI Live](plugins/guitar-to-midi-live) | gitara na MIDI w czasie rzeczywistym, do dowolnego instrumentu | VST3, VST2, CLAP |
-| [Cleaver Slicer](plugins/cleaver-slicer) | pattern slicer / stutter, sekwencer do 32 kroków | VST3 |
+| [Swarm Chorus](plugins/swarm-chorus) | multi-voice chorus (6 voices, stereo), hand-drawn custom wave | VST3 |
+| [Swarm Delay](plugins/swarm-delay) | multi-voice delay (6 voices, stereo) | VST3 |
+| [Swarm Synth](plugins/swarm-synth) | guitar synthesizer: up to 8 oscillators playing what the guitar plays | VST3 |
+| [Guitar to MIDI Live](plugins/guitar-to-midi-live) | guitar to MIDI in real time, to drive any instrument | VST3, VST2, CLAP |
+| [Cleaver Slicer](plugins/cleaver-slicer) | pattern slicer / stutter, step sequencer of up to 32 steps | VST3 |
 
-## Układ
+## Download
 
-- `plugins/<nazwa>/` - kod, testy, README i gotowe pliki (`release/`) jednej wtyczki
-- `shared/dpf/` - [DPF](https://github.com/DISTRHO/DPF) (commit `d849424c`), jedna kopia dla wszystkich wtyczek
-- `shared/dpf-widgets/` - [DPF-Widgets](https://github.com/DISTRHO/DPF-Widgets) (commit `730da639`) z jedną zmianą:
-  w `opengl/DearImGui.cpp` zakres znaków fontu obejmuje polskie litery (Latin Extended-A), myślniki, strzałki
-  i kształty używane przez wtyczki
-- `shared/guitar-engine/` - detektor wysokości i silnik syntezatora wspólny dla Swarm Synth i Guitar to MIDI Live,
-  razem z zapisanymi ustawieniami detektora (wspólny plik `%APPDATA%\Guitar Detector\detector-presets.csv`)
+Ready-to-use builds are in [Releases](https://github.com/rafrowinski/vst-plugins/releases): one zip per plugin
+(Windows 64-bit) with its README and license. Unzip and copy the `.vst3` file to
+`C:\Program Files\Common Files\VST3` (VST2 / CLAP: see the plugin's README).
+The same files are also in each plugin's `release/` folder.
 
-## Budowanie
+## Layout
 
-Wszystkie wtyczki naraz, Linux -> Windows (tak powstały pliki w `release/`):
+- `plugins/<name>/` - code, tests, README and ready-made files (`release/`) of one plugin
+- `shared/dpf/` - [DPF](https://github.com/DISTRHO/DPF) (commit `d849424c`), one copy for all plugins
+- `shared/dpf-widgets/` - [DPF-Widgets](https://github.com/DISTRHO/DPF-Widgets) (commit `730da639`) with one change:
+  in `opengl/DearImGui.cpp` the font glyph range covers Polish letters (Latin Extended-A), dashes, arrows
+  and shapes used by the plugins
+- `shared/guitar-engine/` - the pitch detector and synth engine shared by Swarm Synth and Guitar to MIDI Live,
+  together with the saved detector settings (shared file `%APPDATA%\Guitar Detector\detector-presets.csv`)
+
+## Building
+
+All plugins at once, Linux -> Windows (this is how the files in `release/` were made):
 
     sudo apt install mingw-w64 cmake
     cmake -B build-win -DCMAKE_TOOLCHAIN_FILE=mingw.cmake -DCMAKE_BUILD_TYPE=Release
     cmake --build build-win -j8
 
-Jedna wtyczka: `cmake --build build-win --target swarm-synth-vst3` (cele: `<nazwa>-vst3`, a dla Guitar to MIDI Live
-także `-vst2` i `-clap`). Na Windows: MSYS2 (MinGW64) albo Visual Studio z CMake, ten sam `CMakeLists.txt`
-bez pliku toolchain. Na Linuxie bez toolchaina powstają też wersje JACK (samodzielne programy) do testów.
+One plugin: `cmake --build build-win --target swarm-synth-vst3` (targets: `<name>-vst3`, and for Guitar to MIDI Live
+also `-vst2` and `-clap`). On Windows: MSYS2 (MinGW64) or Visual Studio with CMake, the same `CMakeLists.txt`
+without the toolchain file. On Linux without the toolchain you also get JACK versions (standalone programs) for testing.
 
-Testy każdej wtyczki uruchamia się bez hosta - komendy są w README wtyczki.
+Each plugin's tests run without a host - the commands are in the plugin's README.
 
-## Pobieranie
+## Versions and releases
 
-Gotowe wersje do pobrania są w [Releases](https://github.com/rafrowinski/vst-plugins/releases): jeden plik zip
-na wtyczkę (Windows 64-bit), z README i licencją.
-
-## Wersje i wydania
-
-Każda wtyczka ma własny numer wersji (`d_version` w `src/PluginDSP.cpp`). Żeby wydać wtyczkę:
+Each plugin has its own version number (`d_version` in `src/PluginDSP.cpp`). To release a plugin:
 
     git tag swarm-synth-v1.4.0
     git push origin swarm-synth-v1.4.0
 
-GitHub Actions zbuduje tę wtyczkę i opublikuje wydanie z zipem. Można też na stronie repo opublikować wydanie
-(Releases -> Draft a new release) z tagiem w tej postaci - zip zostanie do niego dołączony.
-Jeśli wersja w tagu nie zgadza się z wersją
-w kodzie, wydanie się nie utworzy (żeby nie wypuścić pliku z zapomnianym numerem wersji).
+or publish a release with such a tag on github.com (Releases -> Draft a new release).
+GitHub Actions builds that plugin and attaches a zip to the release. If the version in the tag does not match the version
+in the code, the build stops (so a file with a forgotten version number never gets released).
 
-## Licencja
+## License
 
-Kod wtyczek (`plugins/`, `shared/guitar-engine/`, pliki budowania) jest na licencji MIT - patrz [LICENSE](LICENSE).
+The plugin code (`plugins/`, `shared/guitar-engine/`, build files) is MIT licensed - see [LICENSE](LICENSE).
 
-Katalogi `shared/dpf/` i `shared/dpf-widgets/` to cudzy kod na własnych licencjach, których pliki są w tych katalogach:
+The `shared/dpf/` and `shared/dpf-widgets/` folders are third-party code under their own licenses, whose files are in those folders:
 
-- [DPF](https://github.com/DISTRHO/DPF) i [DPF-Widgets](https://github.com/DISTRHO/DPF-Widgets) - Filipe Coelho (falkTX) i współautorzy, licencja ISC
-- [Dear ImGui](https://github.com/ocornut/imgui) - Omar Cornut, licencja MIT
-- font DejaVu Sans - licencja w `shared/dpf/dgl/src/resources/`
+- [DPF](https://github.com/DISTRHO/DPF) and [DPF-Widgets](https://github.com/DISTRHO/DPF-Widgets) - Filipe Coelho (falkTX) and contributors, ISC license
+- [Dear ImGui](https://github.com/ocornut/imgui) - Omar Cornut, MIT license
+- DejaVu Sans font - license in `shared/dpf/dgl/src/resources/`
 
-Szkielet projektu wywodzi się z szablonu [imgui-template-plugin](https://github.com/DISTRHO/imgui-template-plugin) (ISC).
+The project skeleton comes from the [imgui-template-plugin](https://github.com/DISTRHO/imgui-template-plugin) template (ISC).
