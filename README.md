@@ -36,9 +36,22 @@ bez pliku toolchain. Na Linuxie bez toolchaina powstają też wersje JACK (samod
 
 Testy każdej wtyczki uruchamia się bez hosta - komendy są w README wtyczki.
 
-## Wersje
+## Pobieranie
 
-Każda wtyczka ma własny numer wersji. Wydania oznaczam tagiem z nazwą wtyczki, np. `swarm-synth-v1.4.0`.
+Gotowe wersje do pobrania są w [Releases](https://github.com/rafrowinski/vst-plugins/releases): jeden plik zip
+na wtyczkę (Windows 64-bit), z README i licencją.
+
+## Wersje i wydania
+
+Każda wtyczka ma własny numer wersji (`d_version` w `src/PluginDSP.cpp`). Żeby wydać wtyczkę:
+
+    git tag swarm-synth-v1.4.0
+    git push origin swarm-synth-v1.4.0
+
+GitHub Actions zbuduje tę wtyczkę i opublikuje wydanie z zipem. Można też na stronie repo opublikować wydanie
+(Releases -> Draft a new release) z tagiem w tej postaci - zip zostanie do niego dołączony.
+Jeśli wersja w tagu nie zgadza się z wersją
+w kodzie, wydanie się nie utworzy (żeby nie wypuścić pliku z zapomnianym numerem wersji).
 
 ## Licencja
 
