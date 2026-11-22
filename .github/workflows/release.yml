@@ -1,0 +1,83 @@
+name: release
+
+# Push a tag "<plugin>-v<version>", e.g. swarm-synth-v1.4.0:
+#   git tag swarm-synth-v1.4.0 && git push origin swarm-synth-v1.4.0
+# or publish a release with such a tag on github.com (Releases -> Draft a new release).
+# GitHub builds that plugin for Windows x64 and attaches a zip to the release.
+on:
+  push:
+    tags: ['*-v*']
+  release:
+    types: [published]
+
+# a release made on github.com can start this twice (tag + release): run one after the other
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read the tag
+        id: tag
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          PLUGIN="${TAG%-v*}"
+          VERSION="${TAG##*-v}"
+          test -d "plugins/$PLUGIN" || { echo "::error::No plugins/$PLUGIN for tag $TAG"; exit 1; }
+          # the version in the code must match the tag (catches a forgotten version bump)
+          CODE=$(grep -o 'd_version([0-9]*, *[0-9]*, *[0-9]*)' "plugins/$PLUGIN/src/PluginDSP.cpp" | grep -o '[0-9][0-9, ]*' | tr -d ' ' | tr ',' '.')
+          test "$CODE" = "$VERSION" || { echo "::error::Tag says $VERSION but PluginDSP.cpp says $CODE"; exit 1; }
+          echo "plugin=$PLUGIN" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -yqq mingw-w64 cmake zip
+          P=${{ steps.tag.outputs.plugin }}
+          TARGETS="$P-vst3"
+          grep -q vst2 "plugins/$P/CMakeLists.txt" && TARGETS="$TARGETS $P-vst2"
+          grep -q clap "plugins/$P/CMakeLists.txt" && TARGETS="$TARGETS $P-clap"
+          cmake -B build-win -DCMAKE_TOOLCHAIN_FILE=mingw.cmake -DCMAKE_BUILD_TYPE=Release
+          cmake --build build-win -j4 --target $TARGETS
+
+      - name: Package
+        id: pkg
+        run: |
+          P=${{ steps.tag.outputs.plugin }}
+          V=${{ steps.tag.outputs.version }}
+          B=build-win/bin
+          mkdir -p dist
+          # same file names as in plugins/<name>/release, freshly built
+          for f in plugins/$P/release/*; do
+            name=$(basename "$f")
+            case "$name" in
+              *.vst3) cp "$B/$P.vst3/Contents/x86_64-win/$P.vst3" "dist/$name" ;;
+              *.dll)  cp "$B/$P-vst2.dll" "dist/$name" ;;
+              *.clap) cp "$B/$P.clap" "dist/$name" ;;
+            esac
+          done
+          x86_64-w64-mingw32-strip dist/*
+          cp plugins/$P/README.md dist/README.md
+          cp LICENSE dist/LICENSE.txt
+          DISPLAY_NAME=$(head -1 plugins/$P/README.md | sed 's/^# *//')
+          ZIP="${DISPLAY_NAME// /-}-$V-win64.zip"
+          (cd dist && zip -q -r "../$ZIP" .)
+          echo "zip=$ZIP" >> "$GITHUB_OUTPUT"
+          echo "title=$DISPLAY_NAME $V" >> "$GITHUB_OUTPUT"
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          overwrite_files: true
+          name: ${{ steps.pkg.outputs.title }}
+          files: ${{ steps.pkg.outputs.zip }}
+          body: |
+            Windows 64-bit. Unzip and copy the `.vst3` file to `C:\Program Files\Common Files\VST3`
+            (VST2 / CLAP, if included: see README.md in the zip).
